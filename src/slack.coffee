@@ -205,6 +205,9 @@ class Slack extends Adapter
       author = self.robot.brain.userForId from, { nick: from }
       author.private = true
 
+      @irc.whois from, (data) =>
+        self.log "[irc] whois(#{from}): #{JSON.stringify(data)}"
+
       if message and author
         self.receive new TextMessage(author, message)
 
