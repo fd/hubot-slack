@@ -183,7 +183,7 @@ class Slack extends Adapter
     @irc.addListener 'registered', () =>
       @irc.list()
 
-      @get "/users.list", (err, data) =>
+      @get "/api/users.list", (err, data) =>
         console.log("users", data)
 
     @irc.addListener 'channellist', (list) =>
