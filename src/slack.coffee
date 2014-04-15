@@ -180,13 +180,13 @@ class Slack extends Adapter
       channels: ['#general']
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
 
-    @get "/api/users.list", (err, data) =>
-      return @logError err if err
-      for user in data.members
-        self.robot.brain.userForId user.id, user
 
     @irc.addListener 'registered', () =>
       @irc.list()
+      @get "/api/users.list", (err, data) =>
+        return @logError err if err
+        for user in data.members
+          self.robot.brain.userForId user.id, user
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
