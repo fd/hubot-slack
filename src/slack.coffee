@@ -186,7 +186,7 @@ class Slack extends Adapter
     @irc.addListener 'channellist', (list) =>
       self.log "[irc] #{JSON.stringify(list)}"
 
-    @irc.addListener 'message', (from, channel, message) =>
+    @irc.addListener 'message#', (from, channel, message) =>
       self.log "[irc:#{channel}] #{from}: #{message}"
       author = self.robot.brain.userForId from, { nick: from, room: channel }
       author.room = channel
