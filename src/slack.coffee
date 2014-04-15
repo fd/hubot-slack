@@ -33,7 +33,7 @@ class Slack extends Adapter
         text       : str
         link_names : @options.link_names if @options?.link_names?
 
-      @post "/services/hooks/hubot", args
+      @post "/api/chat.postMessage", args
 
   reply: (envelope, strings...) ->
     @log "Sending reply"
@@ -63,7 +63,7 @@ class Slack extends Adapter
       channel     : channel
       attachments : [attachment]
       link_names  : @options.link_names if @options?.link_names?
-    @post "/services/hooks/hubot", args
+    @post "/api/chat.postMessage", args
   ###################################################################
   # HTML helpers.
   ###################################################################
@@ -204,9 +204,6 @@ class Slack extends Adapter
       self.log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForId from, { nick: from }
       author.private = true
-
-      @irc.whois from, (data) =>
-        self.log "[irc] whois(#{from}): #{JSON.stringify(data)}"
 
       if message and author
         self.receive new TextMessage(author, message)
