@@ -182,6 +182,7 @@ class Slack extends Adapter
 
     @get "/api/users.list", (err, data) =>
       return @logError err if err
+        console.log("user: #{JSON.stringify(data)}")
       for user in data.members
         console.log("user: #{JSON.stringify(user)}")
         self.robot.brain.userForId user.id, user
