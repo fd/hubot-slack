@@ -174,6 +174,8 @@ class Slack extends Adapter
     clientOptions=
       userName: @options.irc.user
       realName: @options.irc.user
+      password: @options.irc.password
+      sasl:     true
       secure:   true
       channels: ['#general']
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
