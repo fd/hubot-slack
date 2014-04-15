@@ -189,8 +189,7 @@ class Slack extends Adapter
         @irc.join(channel.name)
 
     @irc.addListener 'message#', (from, channel, message) =>
-      return if from === undefined
-
+      return unless from and channel
       self.log "[irc:#{channel}] #{from}: #{message}"
       author = self.robot.brain.userForId from, { nick: from, room: channel }
       author.room = channel
@@ -198,6 +197,7 @@ class Slack extends Adapter
         self.receive new TextMessage(author, message)
 
     @irc.addListener 'pm', (from, message) =>
+      return unless from
       self.log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForId from, { nick: from }
       author.private = true
