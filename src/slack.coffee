@@ -184,7 +184,9 @@ class Slack extends Adapter
       @irc.list()
 
     @irc.addListener 'channellist', (list) =>
-      self.log "[irc] #{JSON.stringify(list)}"
+      for channel in list
+        self.log "[irc] joining: #{channel.name}"
+        @irc.join(channel.name)
 
     @irc.addListener 'message#', (from, channel, message) =>
       self.log "[irc:#{channel}] #{from}: #{message}"
