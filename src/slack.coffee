@@ -180,11 +180,13 @@ class Slack extends Adapter
       channels: ['#general']
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
 
+    @get "/api/users.list", (err, data) =>
+      return @logError err if err
+      for user in data.members
+        self.robot.brain.userForId user.id, user
+
     @irc.addListener 'registered', () =>
       @irc.list()
-
-      @get "/api/users.list", (err, data) =>
-        console.log("users", data)
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
@@ -194,7 +196,7 @@ class Slack extends Adapter
     @irc.addListener 'message#', (from, channel, message) =>
       return unless from and channel
       self.log "[irc:#{channel}] #{from}: #{message}"
-      author = self.robot.brain.userForId from, { nick: from, room: channel }
+      author = self.robot.brain.userForName from
       author.room = channel
       if message and author
         self.receive new TextMessage(author, message)
@@ -202,11 +204,19 @@ class Slack extends Adapter
     @irc.addListener 'pm', (from, message) =>
       return unless from
       self.log "[irc] #{from}: #{message}"
-      author = self.robot.brain.userForId from, { nick: from }
+      author = self.robot.brain.userForName from
       author.private = true
 
+
       if message and author
-        self.receive new TextMessage(author, message)
+        @get "/api/im.list", (err, data) =>
+          return @logError err if err
+          for im in data.ims
+            if author.id is im.user
+              author.reply_to = im.id
+              self.receive new TextMessage(author, message)
+              return
+
 
     # Provide our name to Hubot
     self.robot.name = @options.name
