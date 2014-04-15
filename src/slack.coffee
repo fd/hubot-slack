@@ -186,7 +186,7 @@ class Slack extends Adapter
       @get "/api/users.list", (err, data) =>
         return @logError err if err
         for user in data.members
-          self.robot.brain.userForId user.id, user
+          @robot.brain.userForId user.id, user
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
