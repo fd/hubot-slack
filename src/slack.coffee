@@ -207,9 +207,11 @@ class Slack extends Adapter
       author = self.robot.brain.userForName from
       author.private = true
 
+      console.log("pm: #{JSON.stringify(author)}")
 
       if message and author
         @get "/api/im.list", (err, data) =>
+          console.log("ims: #{JSON.stringify(data)}")
           return @logError err if err
           for im in data.ims
             if author.id is im.user
