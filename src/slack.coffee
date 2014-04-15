@@ -183,6 +183,9 @@ class Slack extends Adapter
     @irc.addListener 'registered', () =>
       @irc.list()
 
+      @get "/users.list", (err, data) =>
+        console.log("users", data)
+
     @irc.addListener 'channellist', (list) =>
       for channel in list
         self.log "[irc] joining: #{channel.name}"
@@ -201,6 +204,7 @@ class Slack extends Adapter
       self.log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForId from, { nick: from }
       author.private = true
+
       if message and author
         self.receive new TextMessage(author, message)
 
