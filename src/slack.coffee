@@ -1,5 +1,6 @@
 {Robot, Adapter, TextMessage} = require 'hubot'
 https = require 'https'
+irc = require 'irc'
 
 class Slack extends Adapter
   constructor: (robot) ->
@@ -100,7 +101,12 @@ class Slack extends Adapter
       name  : process.env.HUBOT_SLACK_BOTNAME or 'slackbot'
       mode  : process.env.HUBOT_SLACK_CHANNELMODE or 'blacklist'
       channels: process.env.HUBOT_SLACK_CHANNELS?.split(',') or []
-      link_names: process.env.HUBOT_SLACK_LINK_NAMES or 0
+      link_names: process.env.HUBOT_SLACK_LINK_NAMES or 0,
+
+    @options.irc =
+      host: "#{@options.team}.irc.slack.com"
+      user: @options.name
+      password: process.env.HUBOT_SLACK_IRC_PASS
 
   getMessageFromRequest: (req) ->
     # Parse the payload
@@ -142,27 +148,55 @@ class Slack extends Adapter
 
     return @logError "No services token provided to Hubot" unless @options.token
     return @logError "No team provided to Hubot" unless @options.team
+    return @logError "No irc password provided to Hubot" unless @options.irc.password
 
     @robot.on 'slack-attachment', (payload)=>
       @custom(payload.message, payload.content)
 
     # Listen to incoming webhooks from slack
     self.robot.router.post "/hubot/slack-webhook", (req, res) ->
-      self.log "Incoming message received"
+      # self.log "Incoming message received"
 
-      hubotMsg = self.getMessageFromRequest req
-      author = self.getAuthorFromRequest req
-      author = self.robot.brain.userForId author.id, author
-      author.room = req.param 'channel_name'
-      self.channelMapping[req.param 'channel_name'] = req.param 'channel_id'
+      # hubotMsg = self.getMessageFromRequest req
+      # author = self.getAuthorFromRequest req
+      # author = self.robot.brain.userForId author.id, author
+      # author.room = req.param 'channel_name'
+      # self.channelMapping[req.param 'channel_name'] = req.param 'channel_id'
 
-      if hubotMsg and author
-        # Pass to the robot
-        self.receive new TextMessage(author, hubotMsg)
+      # if hubotMsg and author
+      #   # Pass to the robot
+      #   self.receive new TextMessage(author, hubotMsg)
 
-      # Just send back an empty reply, since our actual reply,
-      # if any, will be async above
+      # # Just send back an empty reply, since our actual reply,
+      # # if any, will be async above
       res.end ""
+
+    clientOptions=
+      userName: @options.irc.user
+      realName: @options.irc.user
+      secure:   true
+      channels: ['#general']
+    @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
+
+    @irc.addListener 'registered', () =>
+      @irc.list()
+
+    @irc.addListener 'channellist', (list) =>
+      self.log "[irc] #{JSON.stringify(list)}"
+
+    @irc.addListener 'message', (from, channel, message) =>
+      self.log "[irc:#{channel}] #{from}: #{message}"
+      author = self.robot.brain.userForId from, { nick: from, room: channel }
+      author.room = channel
+      if message and author
+        self.receive new TextMessage(author, message)
+
+    @irc.addListener 'pm', (from, message) =>
+      self.log "[irc] #{from}: #{message}"
+      author = self.robot.brain.userForId from, { nick: from }
+      author.private = true
+      if message and author
+        self.receive new TextMessage(author, message)
 
     # Provide our name to Hubot
     self.robot.name = @options.name
