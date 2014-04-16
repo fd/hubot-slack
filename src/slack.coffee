@@ -214,8 +214,9 @@ class Slack extends Adapter
 
       if message and author
         @get "/api/im.list", (err, data) =>
-          @log "ims: #{JSON.stringify(data)}"
           return @logError err if err
+          data = JSON.parse(data)
+          @log "ims: #{JSON.stringify(data)}"
           for im in data.ims
             if author.id is im.user
               author.reply_to = im.id
