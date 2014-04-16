@@ -187,10 +187,10 @@ class Slack extends Adapter
       @log "[irc:#{channel}] NAMES: #{JSON.stringify(data)}"
 
     @irc.addListener 'join', (channel, nick, message) =>
-      @log "[irc:#{channel}] JOIN: #{nick}: #{message}"
+      @log "[irc:#{channel}] JOIN: #{nick}: #{JSON.stringify(message)}"
 
     @irc.addListener 'part', (channel, nick, reason, message) =>
-      @log "[irc:#{channel}] PART(#{reason}): #{nick}: #{message}"
+      @log "[irc:#{channel}] PART(#{reason}): #{nick}: #{JSON.stringify(message)}"
 
     @irc.addListener 'notice', (nick, to, text, message) =>
       data = {nick: nick, to: to, text: text, message: message}
