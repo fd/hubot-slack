@@ -202,7 +202,7 @@ class Slack extends Adapter
 
     @irc.addListener 'message', (from, channel, message) =>
       return unless from and channel
-      @og "[irc:#{channel}] #{from}: #{message}"
+      @log "[irc:#{channel}] #{from}: #{message}"
       author = self.robot.brain.userForName from
       author.room = channel
       # if message and author
