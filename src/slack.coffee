@@ -62,7 +62,7 @@ class Slack extends Adapter
     args =
       username    : @robot.name
       channel     : channel
-      attachments : [attachment]
+      attachments : JSON.stringify([attachment])
       link_names  : @options.link_names if @options?.link_names?
 
     @log "[api]: POST #{JSON.stringify(args)}"
