@@ -208,7 +208,6 @@ class Slack extends Adapter
       return unless from
       @log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForName from
-      author.private = true
 
       # @log "pm: #{JSON.stringify(author)}"
 
@@ -219,8 +218,10 @@ class Slack extends Adapter
           # @log "ims: #{JSON.stringify(data)}"
           for im in data.ims
             if author.id is im.user
-              author.reply_to = im.id
-              self.receive new TextMessage(author, message)
+              msg = new TextMessage(author, message)
+              msg.private  = true
+              msg.reply_to = im.id
+              self.receive msg
               return
 
 
