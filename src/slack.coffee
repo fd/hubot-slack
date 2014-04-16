@@ -1,5 +1,6 @@
 {Robot, Adapter, TextMessage} = require 'hubot'
 https = require 'https'
+URL = require 'url'
 irc = require 'irc'
 
 class Slack extends Adapter
@@ -26,13 +27,13 @@ class Slack extends Adapter
 
     strings.forEach (str) =>
       str = @escapeHtml str
-      args = JSON.stringify
+      args =
         username   : @robot.name
         channel    : channel
         text       : str
         link_names : @options.link_names if @options?.link_names?
 
-      @log "[api]: POST #{args}"
+      @log "[api]: POST #{JSON.stringify(args)}"
       @post "/api/chat.postMessage", args, (err, body) =>
         @logError err if err
         @log "[api]: REPLY: #{body}"
@@ -58,13 +59,13 @@ class Slack extends Adapter
       pretext  : @escapeHtml data.pretext
       color    : data.color
       fields   : data.fields
-    args = JSON.stringify
+    args =
       username    : @robot.name
       channel     : channel
       attachments : [attachment]
       link_names  : @options.link_names if @options?.link_names?
 
-    @log "[api]: POST #{args}"
+    @log "[api]: POST #{JSON.stringify(args)}"
     @post "/api/chat.postMessage", args, (err, body) =>
       @logError err if err
       @log "[api]: REPLY: #{body}"
@@ -235,17 +236,15 @@ class Slack extends Adapter
   get: (path, callback) ->
     @request "GET", path, null, callback
 
-  post: (path, body, callback) ->
-    @request "POST", path, body, callback
+  post: (path, params, callback) ->
+    @request "POST", path, params, callback
 
-  request: (method, path, body, callback) ->
+  request: (method, path, params, callback) ->
     self = @
 
     host = "#{@options.team}.slack.com"
     headers =
       Host: host
-
-    path += "?token=#{@options.token}"
 
     reqOptions =
       agent    : false
@@ -256,9 +255,14 @@ class Slack extends Adapter
       headers  : headers
 
     if method is "POST"
-      body = new Buffer body
+      params.token = @options.token
+      reqOptions.path = URL.format({ pathname: path, query: params })
       reqOptions.headers["Content-Type"] = "application/x-www-form-urlencoded"
-      reqOptions.headers["Content-Length"] = body.length
+      reqOptions.headers["Content-Length"] = 0
+    else
+      params = {}
+      params.token = @options.token
+      reqOptions.path = URL.format({ pathname: path, query: params })
 
     request = https.request reqOptions, (response) ->
       data = ""
@@ -277,10 +281,7 @@ class Slack extends Adapter
           self.logError "HTTPS response error:", err
           callback? err, null
 
-    if method is "POST"
-      request.end body, "binary"
-    else
-      request.end()
+    request.end()
 
     request.on "error", (err) ->
       self.logError "HTTPS request error:", err
