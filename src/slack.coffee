@@ -231,7 +231,7 @@ class Slack extends Adapter
               author.private  = true
               author.reply_to = im.id
               author.room     = im.id
-              self.receive new TextMessage(author, message)
+              self.receive new TextMessage(author, "@#{@options.name}: #{message}")
 
 
     # Provide our name to Hubot
