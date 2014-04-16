@@ -183,6 +183,23 @@ class Slack extends Adapter
       @join_all_channels()
       @load_new_users()
 
+    @irc.addListener 'names', (channel, data) =>
+      @log "[irc:#{channel}] NAMES: #{JSON.stringify(data)}"
+
+    @irc.addListener 'join', (channel, nick, message) =>
+      @log "[irc:#{channel}] JOIN: #{nick}: #{message}"
+
+    @irc.addListener 'part', (channel, nick, reason, message) =>
+      @log "[irc:#{channel}] PART(#{reason}): #{nick}: #{message}"
+
+    @irc.addListener 'notice', (nick, to, text, message) =>
+      data = {nick: nick, to: to, text: text, message: message}
+      @log "[irc] NOTICE: #{JSON.stringify(data)}"
+
+    @irc.addListener 'invite', (channel, from, message) =>
+      data = {channel: channel, from: from, message: message}
+      @log "[irc] INVITE: #{JSON.stringify(data)}"
+
     @irc.addListener 'channellist', (list) =>
       for channel in list
         unless @joined[channel]
