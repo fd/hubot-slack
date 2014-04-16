@@ -33,7 +33,9 @@ class Slack extends Adapter
         link_names : @options.link_names if @options?.link_names?
 
       @log "[api]: POST #{args}"
-      @post "/api/chat.postMessage", args
+      @post "/api/chat.postMessage", args, (err, body) =>
+        @logError err if err
+        @log "[api]: REPLY: #{body}"
 
   reply: (envelope, strings...) ->
     @log "Sending reply"
@@ -63,7 +65,9 @@ class Slack extends Adapter
       link_names  : @options.link_names if @options?.link_names?
 
     @log "[api]: POST #{args}"
-    @post "/api/chat.postMessage", args
+    @post "/api/chat.postMessage", args, (err, body) =>
+      @logError err if err
+      @log "[api]: REPLY: #{body}"
   ###################################################################
   # HTML helpers.
   ###################################################################
