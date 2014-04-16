@@ -154,7 +154,7 @@ class Slack extends Adapter
       @custom(payload.message, payload.content)
 
     # Listen to incoming webhooks from slack
-    self.robot.router.post "/hubot/slack-webhook", (req, res) ->
+    @robot.router.post "/hubot/slack-webhook", (req, res) ->
       # self.log "Incoming message received"
 
       # hubotMsg = self.getMessageFromRequest req
@@ -181,21 +181,23 @@ class Slack extends Adapter
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
 
 
+    @get "/api/users.list", (err, data) =>
+      return @logError err if err?
+      @log "users: #{data}"
+      for user in data.members
+        @robot.brain.userForId user.id, user
+
     @irc.addListener 'registered', () =>
       @irc.list()
-      @get "/api/users.list", (err, data) =>
-        return @logError err if err
-        for user in data.members
-          @robot.brain.userForId user.id, user
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
-        self.log "[irc] joining: #{channel.name}"
+        @log "[irc] joining: #{channel.name}"
         @irc.join(channel.name)
 
     @irc.addListener 'message#', (from, channel, message) =>
       return unless from and channel
-      self.log "[irc:#{channel}] #{from}: #{message}"
+      @og "[irc:#{channel}] #{from}: #{message}"
       author = self.robot.brain.userForName from
       author.room = channel
       if message and author
@@ -203,15 +205,15 @@ class Slack extends Adapter
 
     @irc.addListener 'pm', (from, message) =>
       return unless from
-      self.log "[irc] #{from}: #{message}"
+      @log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForName from
       author.private = true
 
-      console.log("pm: #{JSON.stringify(author)}")
+      @log "pm: #{JSON.stringify(author)}"
 
       if message and author
         @get "/api/im.list", (err, data) =>
-          console.log("ims: #{JSON.stringify(data)}")
+          @log "ims: #{JSON.stringify(data)}"
           return @logError err if err
           for im in data.ims
             if author.id is im.user
