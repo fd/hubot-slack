@@ -221,6 +221,8 @@ class Slack extends Adapter
       @log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForName from
 
+      message = message.replace(new RegExp("^\\s*[@]?#{@options.name}[:]?\\s*","i"), "")
+
       # @log "pm: #{JSON.stringify(author)}"
       if message and author
         @get "/api/im.list", (err, data) =>
