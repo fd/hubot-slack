@@ -208,6 +208,7 @@ class Slack extends Adapter
       return unless from
       @log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForName from
+      author.private  = true
 
       # @log "pm: #{JSON.stringify(author)}"
 
@@ -215,13 +216,11 @@ class Slack extends Adapter
         @get "/api/im.list", (err, data) =>
           return @logError err if err
           data = JSON.parse(data)
-          # @log "ims: #{JSON.stringify(data)}"
           for im in data.ims
             if author.id is im.user
-              msg = new TextMessage(author, message)
-              msg.private  = true
-              msg.reply_to = im.id
-              self.receive msg
+              author.reply_to = im.id
+              author.room     = im.id
+              self.receive new TextMessage(author, message)
               return
 
 
