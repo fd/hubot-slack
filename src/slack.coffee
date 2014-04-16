@@ -176,8 +176,8 @@ class Slack extends Adapter
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
 
     @irc.addListener 'registered', () =>
-      setInterval(() => @join_all_channels(), 20 * 1000)
-      setInterval(() => @load_new_users(), 60 * 1000)
+      setInterval(@join_all_channels.bind(this), 20 * 1000)
+      setInterval(@load_new_users.bind(this), 60 * 1000)
       @join_all_channels()
       @load_new_users()
 
