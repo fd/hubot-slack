@@ -32,7 +32,7 @@ class Slack extends Adapter
       str = @escapeHtml str
       args =
         username   : bot.name
-        icon_url:  : bot.profile.image_48
+        icon_url   : bot.profile.image_48
         channel    : channel
         text       : str
         link_names : @options.link_names if @options?.link_names?
@@ -67,8 +67,8 @@ class Slack extends Adapter
       color    : data.color
       fields   : data.fields
     args =
-      username   : bot.name
-      icon_url:  : bot.profile.image_48
+      username    : bot.name
+      icon_url    : bot.profile.image_48
       channel     : channel
       attachments : JSON.stringify([attachment])
       link_names  : @options.link_names if @options?.link_names?
