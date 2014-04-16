@@ -166,24 +166,6 @@ class Slack extends Adapter
     @robot.on 'slack-attachment', (payload)=>
       @custom(payload.message, payload.content)
 
-    # Listen to incoming webhooks from slack
-    @robot.router.post "/hubot/slack-webhook", (req, res) ->
-      # self.log "Incoming message received"
-
-      # hubotMsg = self.getMessageFromRequest req
-      # author = self.getAuthorFromRequest req
-      # author = self.robot.brain.userForId author.id, author
-      # author.room = req.param 'channel_name'
-      # self.channelMapping[req.param 'channel_name'] = req.param 'channel_id'
-
-      # if hubotMsg and author
-      #   # Pass to the robot
-      #   self.receive new TextMessage(author, hubotMsg)
-
-      # # Just send back an empty reply, since our actual reply,
-      # # if any, will be async above
-      res.end ""
-
     clientOptions=
       userName: @options.irc.user
       realName: @options.irc.user
@@ -193,16 +175,11 @@ class Slack extends Adapter
       channels: ['#general']
     @irc = new irc.Client @options.irc.host, @options.irc.user, clientOptions
 
-
-    @get "/api/users.list", (err, data) =>
-      return @logError err if err?
-      data = JSON.parse(data)
-      for user in data.members
-        # @log "user: #{user}"
-        @robot.brain.userForId user.id, user
-
     @irc.addListener 'registered', () =>
-      @irc.list()
+      setInterval(() => @join_all_channels(), 20 * 1000)
+      setInterval(() => @load_new_users(), 60 * 1000)
+      @join_all_channels()
+      @load_new_users()
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
@@ -237,6 +214,16 @@ class Slack extends Adapter
     @log "Successfully 'connected' as", self.robot.name
     self.emit "connected"
 
+
+  join_all_channels: () ->
+    @irc.list()
+
+  load_new_users: () ->
+    @get "/api/users.list", (err, data) =>
+      return @logError err if err?
+      data = JSON.parse(data)
+      for user in data.members
+        @robot.brain.userForId user.id, user
 
   ###################################################################
   # Convenience HTTP Methods for sending data back to slack.
