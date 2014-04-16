@@ -220,13 +220,18 @@ class Slack extends Adapter
       return unless from
       @log "[irc] #{from}: #{message}"
       author = self.robot.brain.userForName from
-      author.private  = true
 
       # @log "pm: #{JSON.stringify(author)}"
-
-      author.reply_to = "@#{author.name}"
-      author.room     = "@#{author.name}"
-      self.receive new TextMessage(author, message)
+      if message and author
+        @get "/api/im.list", (err, data) =>
+          return @logError err if err
+          data = JSON.parse(data)
+          for im in data.ims
+            if im.user == author.id
+              author.private  = true
+              author.reply_to = im.id
+              author.room     = "@#{author.name}"
+              self.receive new TextMessage(author, message)
 
 
     # Provide our name to Hubot
