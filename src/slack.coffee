@@ -61,17 +61,19 @@ class Slack extends Adapter
     bot = @robot.brain.userForName(@options.name)
     @log "[API]: BOT #{JSON.stringify(bot)}"
 
-    attachment =
-      text     : @escapeHtml data.text
-      fallback : @escapeHtml data.fallback
-      pretext  : @escapeHtml data.pretext
-      color    : data.color
-      fields   : data.fields
+    unless data.attachments?
+      data = {attachments: [data]}
+
+    for attachment in data.attachments
+      attachment.text     = @escapeHtml(attachment.text)     if attachment.text?
+      attachment.fallback = @escapeHtml(attachment.fallback) if attachment.fallback?
+      attachment.pretext  = @escapeHtml(attachment.pretext)  if attachment.pretext?
+
     args =
       username    : bot.name
       icon_url    : bot.profile.image_48
       channel     : channel
-      attachments : JSON.stringify([attachment])
+      attachments : JSON.stringify(data.attachments)
       link_names  : @options.link_names if @options?.link_names?
 
     @log "[api]: POST #{JSON.stringify(args)}"
