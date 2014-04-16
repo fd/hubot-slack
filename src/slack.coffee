@@ -230,7 +230,7 @@ class Slack extends Adapter
             if im.user == author.id
               author.private  = true
               author.reply_to = im.id
-              author.room     = "@#{author.name}"
+              author.room     = im.id
               self.receive new TextMessage(author, message)
 
 
