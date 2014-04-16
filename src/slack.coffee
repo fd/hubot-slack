@@ -163,6 +163,8 @@ class Slack extends Adapter
     return @logError "No team provided to Hubot" unless @options.team
     return @logError "No irc password provided to Hubot" unless @options.irc.password
 
+    @joined = {}
+
     @robot.on 'slack-attachment', (payload)=>
       @custom(payload.message, payload.content)
 
@@ -183,8 +185,10 @@ class Slack extends Adapter
 
     @irc.addListener 'channellist', (list) =>
       for channel in list
-        @log "[irc] joining: #{channel.name}"
-        @irc.join(channel.name)
+        unless @joined[channel]
+          @log "[irc] joining: #{channel.name}"
+          @irc.join(channel.name)
+          @joined[channel] = true
 
     @irc.addListener 'message#', (from, channel, message) =>
       return unless from and channel
