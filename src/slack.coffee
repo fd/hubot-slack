@@ -1,7 +1,8 @@
 {Robot, Adapter, TextMessage} = require 'hubot'
-https = require 'https'
-URL = require 'url'
-irc = require 'irc'
+https       = require 'https'
+querystring = require 'querystring'
+URL         = require 'url'
+irc         = require 'irc'
 
 class Slack extends Adapter
   constructor: (robot) ->
@@ -258,6 +259,8 @@ class Slack extends Adapter
   request: (method, path, params, callback) ->
     self = @
 
+    path += "?token=#{@options.token}"
+
     host = "#{@options.team}.slack.com"
     headers =
       Host: host
@@ -270,15 +273,11 @@ class Slack extends Adapter
       method   : method
       headers  : headers
 
+    post_data = null
     if method is "POST"
-      params.token = @options.token
-      reqOptions.path = URL.format({ pathname: path, query: params })
-      reqOptions.headers["Content-Type"] = "application/x-www-form-urlencoded"
-      reqOptions.headers["Content-Length"] = 0
-    else
-      params = {}
-      params.token = @options.token
-      reqOptions.path = URL.format({ pathname: path, query: params })
+      post_data = querystring.stringify(params)
+      reqOptions.headers["Content-Type"] = 'application/x-www-form-urlencoded'
+      reqOptions.headers["Content-Length"] = post_data.length
 
     request = https.request reqOptions, (response) ->
       data = ""
@@ -297,6 +296,8 @@ class Slack extends Adapter
           self.logError "HTTPS response error:", err
           callback? err, null
 
+
+    request.write(post_data) if post_data
     request.end()
 
     request.on "error", (err) ->
