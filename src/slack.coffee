@@ -216,16 +216,9 @@ class Slack extends Adapter
 
       # @log "pm: #{JSON.stringify(author)}"
 
-      if message and author
-        @get "/api/im.list", (err, data) =>
-          return @logError err if err
-          data = JSON.parse(data)
-          for im in data.ims
-            if author.id is im.user
-              author.reply_to = im.id
-              author.room     = im.id
-              self.receive new TextMessage(author, message)
-              return
+      author.reply_to = author.id
+      author.room     = author.id
+      self.receive new TextMessage(author, message)
 
 
     # Provide our name to Hubot
