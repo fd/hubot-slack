@@ -216,8 +216,8 @@ class Slack extends Adapter
 
       # @log "pm: #{JSON.stringify(author)}"
 
-      author.reply_to = author.id
-      author.room     = author.id
+      author.reply_to = "@#{author.name}"
+      author.room     = "@#{author.name}"
       self.receive new TextMessage(author, message)
 
 
