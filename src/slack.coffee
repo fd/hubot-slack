@@ -205,7 +205,7 @@ class Slack extends Adapter
       @og "[irc:#{channel}] #{from}: #{message}"
       author = self.robot.brain.userForName from
       author.room = channel
-      if message and author
+      # if message and author
         # self.receive new TextMessage(author, message)
 
     @irc.addListener 'pm', (from, message) =>
