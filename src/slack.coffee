@@ -25,6 +25,9 @@ class Slack extends Adapter
   send: (envelope, strings...) ->
     channel = envelope.reply_to || @channelMapping[envelope.room] || envelope.room
 
+    bot = @robot.brain.userForName(@options.name)
+    @log "[API]: BOT #{JSON.stringify(bot)}"
+
     strings.forEach (str) =>
       str = @escapeHtml str
       args =
@@ -52,6 +55,9 @@ class Slack extends Adapter
 
   custom: (message, data)->
     channel = message.reply_to || @channelMapping[message.room] || message.room
+
+    bot = @robot.brain.userForName(@options.name)
+    @log "[API]: BOT #{JSON.stringify(bot)}"
 
     attachment =
       text     : @escapeHtml data.text
