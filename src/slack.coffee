@@ -22,7 +22,6 @@ class Slack extends Adapter
   # robot.respond, robot.listen, etc.
   ###################################################################
   send: (envelope, strings...) ->
-    @log "Sending message"
     channel = envelope.reply_to || @channelMapping[envelope.room] || envelope.room
 
     strings.forEach (str) =>
@@ -33,6 +32,7 @@ class Slack extends Adapter
         text       : str
         link_names : @options.link_names if @options?.link_names?
 
+      @log "[api]: POST #{args}"
       @post "/api/chat.postMessage", args
 
   reply: (envelope, strings...) ->
@@ -48,8 +48,6 @@ class Slack extends Adapter
 
 
   custom: (message, data)->
-    @log "Sending custom message"
-
     channel = message.reply_to || @channelMapping[message.room] || message.room
 
     attachment =
@@ -63,6 +61,8 @@ class Slack extends Adapter
       channel     : channel
       attachments : [attachment]
       link_names  : @options.link_names if @options?.link_names?
+
+    @log "[api]: POST #{args}"
     @post "/api/chat.postMessage", args
   ###################################################################
   # HTML helpers.
@@ -185,7 +185,7 @@ class Slack extends Adapter
       return @logError err if err?
       data = JSON.parse(data)
       for user in data.members
-        @log "user: #{user}"
+        # @log "user: #{user}"
         @robot.brain.userForId user.id, user
 
     @irc.addListener 'registered', () =>
@@ -210,13 +210,13 @@ class Slack extends Adapter
       author = self.robot.brain.userForName from
       author.private = true
 
-      @log "pm: #{JSON.stringify(author)}"
+      # @log "pm: #{JSON.stringify(author)}"
 
       if message and author
         @get "/api/im.list", (err, data) =>
           return @logError err if err
           data = JSON.parse(data)
-          @log "ims: #{JSON.stringify(data)}"
+          # @log "ims: #{JSON.stringify(data)}"
           for im in data.ims
             if author.id is im.user
               author.reply_to = im.id
