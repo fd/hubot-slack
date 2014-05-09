@@ -183,7 +183,6 @@ class Slack extends Adapter
     @irc.addListener 'registered', () =>
       setInterval(@join_all_channels.bind(this), 20 * 1000)
       setInterval(@load_new_users.bind(this), 60 * 1000)
-      setInterval(@send_ping.bind(this), 2 * 60 * 1000)
       @join_all_channels()
       @load_new_users()
 
@@ -256,9 +255,6 @@ class Slack extends Adapter
       data = JSON.parse(data)
       for user in data.members
         @robot.brain.userForId user.id, user
-
-  send_ping: ()->
-    @irc.say("slackbot", "/active")
 
   ###################################################################
   # Convenience HTTP Methods for sending data back to slack.
